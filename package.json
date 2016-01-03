@@ -1,13 +1,30 @@
 {
   "name": "zcrawler",
   "version": "0.0.1",
-  "dependencies": {
-    "async": "^1.5.0",
-    "co": "*",
-    "composition": "^2.2.1",
-    "lodash": "^3.10.1",
-    "pattern-emitter": "1.0.x",
-    "request": "^2.67.0",
-    "thunkify": "^2.1.2"
-  }
+  "description": "Simple but powerful es6 based crawler/spider",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/softwarezhu/zcrawler.git"
+  },
+  "keywords": [
+    "spider",
+    "crawler",
+    "es6",
+    "generator"
+  ],
+  "author": "zhulin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/softwarezhu/zcrawler/issues"
+  },
+  "homepage": "https://github.com/softwarezhu/zcrawler#readme"
 }
