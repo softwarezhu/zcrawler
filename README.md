@@ -52,9 +52,9 @@ crawler.queue('http://www.baidu.com?q=hi', {headers: {Cookie: 'sessionid=1232;'}
 ```
 
 ## use midware
-Use `use()` to create a new midware, just like Koa. You can change the request before `yield next;`, and change the response after `yield next`. 
+Use `use()` to create a new midware, just like [Koa](https://github.com/koajs/koa). You can change the request before `yield next;`, and change the response after `yield next`. 
 
-```
+```javascript
 
 let Crawler = require('zcrawler');
 
