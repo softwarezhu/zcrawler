@@ -1,8 +1,8 @@
 # zcrawler
-A new generation of crawler/spider
+A new generation of crawler/spider, based on es6's generators/yield. 
 
 ## install
-```npm install zcrawler```
+    npm install zcrawler
 
 ## how to use
 ```javascript
