@@ -7,10 +7,11 @@ var request = require('request');
 var _ = require('lodash');
 var async = require('async');
 var zlib = require('zlib');
+var compose = require('composition');
+var util = require('util');
+
 var requestGet = thunkify(request);
 var gunzip = thunkify(zlib.gunzip);
-var compose = require('composition');
-
 
 var CrawlerContext = function(options){
     this.options = options;
@@ -20,81 +21,79 @@ var CrawlerContext = function(options){
 };
 
 
-class Crawler extends EventEmitter
-{
-    constructor(options) {
-        super();
-        let defaultOptions = {
-            concurrency: 3,
-            forceUTF8: true
-        };
-        let self = this;
-        this.options = _.extend(defaultOptions, options);
-        this.taskQueue = async.queue(self.process.bind(self), this.options.concurrency);
-        this.taskQueue.empty = ()=>this.emit('empty');
-        this.taskQueue.drain = ()=>this.emit('drain');
-        this.midwares = [];
-    }
+var Crawler = function(options){
+    EventEmitter.call(this);
 
-    queue(url, options, callback) {
-        if (arguments.length == 1) {
-            if (typeof url == 'string') {
-                options = {
-                    url: url
-                }
-            } else {
-                options = url;
-            }
-        } else if (arguments.length == 2) {
-            if (typeof url == 'string') {
-                if (typeof options == 'function') {
-                    callback = options;
-                    options = {
-                        url: url,
-                        callback: callback
-                    };
-                } else {
-                    options['url'] = url;
-                }
-            } else {
-                callback = options;
-                options = url;
-                options['callback'] = callback;
+    let defaultOptions = {
+        concurrency: 3,
+        forceUTF8: true
+    };
+    let self = this;
+    this.options = _.extend(defaultOptions, options);
+    this.taskQueue = async.queue(self.process.bind(self), this.options.concurrency);
+    this.taskQueue.empty = ()=>this.emit('empty');
+    this.taskQueue.drain = ()=>this.emit('drain');
+    this.midwares = [];
+};
+util.inherits(Crawler, EventEmitter);
+
+Crawler.prototype.queue = function(url, options, callback){
+    if (arguments.length == 1) {
+        if (typeof url == 'string') {
+            options = {
+                url: url
             }
         } else {
-            options['url'] = url;
+            options = url;
+        }
+    } else if (arguments.length == 2) {
+        if (typeof url == 'string') {
+            if (typeof options == 'function') {
+                callback = options;
+                options = {
+                    url: url,
+                    callback: callback
+                };
+            } else {
+                options['url'] = url;
+            }
+        } else {
+            callback = options;
+            options = url;
             options['callback'] = callback;
         }
-
-        options = _.extend(this.options, options);
-
-        let task = new CrawlerContext(options);
-        this.taskQueue.push(task);
+    } else {
+        options['url'] = url;
+        options['callback'] = callback;
     }
 
-    process(task, callback) {
-        let self = this;
-        let middlewares = self.midwares.slice(0, self.midwares.length);
-        middlewares.push(self.send);
-        var fn = compose(middlewares);
-        var ctx = task;
-        fn.call(ctx).then(function(val) {
-            ctx.response && self.emit(ctx.url, ctx);
-            if (ctx.response && ctx.callback) {
-                ctx.callback();
-            }
+    options = _.extend(this.options, options);
 
-            callback();
-        }).catch(function(err){
-            callback(err);
-        });
-    }
+    let task = new CrawlerContext(options);
+    this.taskQueue.push(task);
+};
 
+Crawler.prototype.process = function(task, callback) {
+    let self = this;
+    let middlewares = self.midwares.slice(0, self.midwares.length);
+    middlewares.push(self.send);
+    var fn = compose(middlewares);
+    var ctx = task;
+    fn.call(ctx).then(function(val) {
+        ctx.response && self.emit(ctx.url, ctx);
+        if (ctx.response && ctx.callback) {
+            ctx.callback();
+        }
 
-    use(callback) {
-        this.midwares.push(callback);
-    }
-}
+        callback();
+    }).catch(function(err){
+        callback(err);
+    });
+};
+
+Crawler.prototype.use = function(callback) {
+    this.midwares.push(callback);
+};
 
 Crawler.prototype.send = function* (next){
     let options = _.pick(this.options, ['url']);
