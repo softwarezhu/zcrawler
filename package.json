@@ -6,7 +6,15 @@
   "directories": {
     "example": "examples"
   },
-  "dependencies": {},
+  "dependencies": {
+    "async": "*",
+    "lodash": "*",
+    "co": "*",
+    "thunkify": "*",
+    "request": "*",
+    "composition": "*",
+    "pattern-emitter": "*"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
